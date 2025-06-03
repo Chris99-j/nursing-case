@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nursing Case Presentation System</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+
+    <h1>Nursing Case Presentation System</h1>
+
+    <section class="form-section">
+      <h2>Add New Case</h2>
+      <form id="caseForm">
+        <label>Patient Name: <input type="text" id="patientName" required /></label>
+        <label>Age: <input type="number" id="patientAge" min="0" required /></label>
+        <label>Sex:
+          <select id="patientSex" required>
+            <option value="">Select</option>
+            <option>Male</option>
+            <option>Female</option>
+            <option>Other</option>
+          </select>
+        </label>
+        <label>Case Summary:<textarea id="caseSummary" rows="3" required></textarea></label>
+        <label>Status:
+          <select id="caseStatus" required>
+            <option value="">Select</option>
+            <option>Open</option>
+            <option>In Progress</option>
+            <option>Closed</option>
+          </select>
+        </label>
+        <label>Assigned Nurse: <input type="text" id="assignedNurse" required /></label>
+        <label>Attach File: <input type="file" id="fileUpload" /></label>
+
+        
+        <button type="submit">Add Case</button>
+          <button type="button" id="saveBtn" style="display:none;">Save</button>
+      </form>
+    </section>
+
+    
+<select id="caseStatusFilter">
+  <option value="">All Statuses</option>
+  <option value="Open">Open</option>
+  <option value="Closed">Closed</option>
+  <option value="Pending">Pending</option>
+</select>
+
+<section class="display-section">
+  <h2>Patient Profiles</h2>
+  <input id="patientSearch" type="text" placeholder="Search patients..." />
+  <div id="patientList"></div>
+  <div id="patientPagination"></div>
+</section>
+
+<section class="display-section">
+  <h2>Case Presentations</h2>
+  <input id="caseSearch" type="text" placeholder="Search cases..." />
+  <div id="caseList"></div>
+  <div id="casePagination"></div>
+</section>
+
+
+    <section class="comments-section" id="commentsSection" style="display:none;">
+      <h2>Comments</h2>
+      <textarea id="commentInput" rows="3" placeholder="Add comment..."></textarea>
+      <button id="addCommentBtn">Add Comment</button>
+      <ul id="commentList"></ul>
+    </section>
+
+    <section class="analytics-section">
+      <h2>Analytics (Case Status Counts)</h2>
+      <ul id="analyticsList"></ul>
+    </section>
+
+    <!-- Export / Print Buttons -->
+  <button id="printBtn">Print</button>
+<button id="exportCSVBtn">Export CSV</button>
+<button id="exportPDFBtn">Export PDF</button>
+
+<div id="patientProfiles" class="card-list" style="display:none;"></div>
+<div id="casePresentations" class="card-list" style="display:none;"></div>
+
+
+
+  </div>
+
+  <!-- jsPDF CDN for PDF export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="script.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/docx/7.0.3/docx.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
+</body>
+</html>
