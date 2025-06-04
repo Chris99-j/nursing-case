@@ -12,35 +12,52 @@
     <h1>Nursing Case Presentation System</h1>
 
     <section class="form-section">
-      <h2>Add New Case</h2>
-      <form id="caseForm">
-        <label>Patient Name: <input type="text" id="patientName" required /></label>
-        <label>Age: <input type="number" id="patientAge" min="0" required /></label>
-        <label>Sex:
-          <select id="patientSex" required>
-            <option value="">Select</option>
-            <option>Male</option>
-            <option>Female</option>
-            <option>Other</option>
-          </select>
-        </label>
-        <label>Case Summary:<textarea id="caseSummary" rows="3" required></textarea></label>
-        <label>Status:
-          <select id="caseStatus" required>
-            <option value="">Select</option>
-            <option>Open</option>
-            <option>In Progress</option>
-            <option>Closed</option>
-          </select>
-        </label>
-        <label>Assigned Nurse: <input type="text" id="assignedNurse" required /></label>
-        <label>Attach File: <input type="file" id="fileUpload" /></label>
+  <h2>Add New Case</h2>
+  <form id="caseForm">
+    <label>Patient Name: <input type="text" id="patientName" required /></label>
+    <label>Age: <input type="number" id="patientAge" min="0" required /></label>
+    <label>Sex:
+      <select id="patientSex" required>
+        <option value="">Select</option>
+        <option>Male</option>
+        <option>Female</option>
+        <option>Other</option>
+      </select>
+    </label>
 
-        
-        <button type="submit">Add Case</button>
-          <button type="button" id="saveBtn" style="display:none;">Save</button>
-      </form>
-    </section>
+    <label>Medical Diagnosis:
+      <textarea id="medicalDiagnosis" rows="3" required></textarea>
+    </label>
+
+    <label>Doctor Diagnosis:
+      <textarea id="doctorDiagnosis" rows="3" required></textarea>
+    </label>
+
+    <label>History:
+      <textarea id="history" rows="3" required></textarea>
+    </label>
+
+    <label>Case Summary:
+      <textarea id="caseSummary" rows="3" required></textarea>
+    </label>
+    
+    <label>Status:
+      <select id="caseStatus" required>
+        <option value="">Select</option>
+        <option>Open</option>
+        <option>In Progress</option>
+        <option>Closed</option>
+      </select>
+    </label>
+
+    <label>Assigned Nurse: <input type="text" id="assignedNurse" required /></label>
+    <label>Attach File: <input type="file" id="fileUpload" /></label>
+
+    <button type="submit">Add Case</button>
+    <button type="button" id="saveBtn" style="display:none;">Save</button>
+  </form>
+</section>
+
 
     
 <select id="caseStatusFilter">

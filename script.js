@@ -25,7 +25,7 @@ function getPatientById(id) {
 }
 
 // Add or find patient by unique fields, return patientId
-function findOrAddPatient(name, age, sex) {
+function findOrAddPatient(name, age, sex, medicalDiagnosis, doctorDiagnosis, history) {
   let patient = patients.find(
     (p) => p.name === name && p.age === age && p.sex === sex
   );
@@ -35,17 +35,29 @@ function findOrAddPatient(name, age, sex) {
       name,
       age,
       sex,
+      medicalDiagnosis,
+      doctorDiagnosis,
+      history,
     };
     patients.push(patient);
+  } else {
+    // Optionally update existing patient fields if needed
+    patient.medicalDiagnosis = medicalDiagnosis;
+    patient.doctorDiagnosis = doctorDiagnosis;
+    patient.history = history;
   }
   return patient.id;
 }
 
+
 // Add new case, linking to patientId
-function addCase(patientId, summary, status, nurse, fileName) {
+function addCase(patientId, medicalDiagnosis, doctorDiagnosis, history, summary, status, nurse, fileName) {
   const newCase = {
     id: caseIdCounter++,
     patientId,
+    medicalDiagnosis,
+    doctorDiagnosis,
+    history,
     summary,
     status,
     nurse,
@@ -120,17 +132,28 @@ function renderCaseList() {
   let html = `<table class="list-table">
     <thead>
       <tr>
-        <th>Patient</th><th>Summary</th><th>Status</th><th>Assigned Nurse</th><th>File</th>
+        <th>Patient</th>
+        <th>Medical Diagnosis</th>
+        <th>Doctor Diagnosis</th>
+        <th>History</th>
+        <th>Summary</th>
+        <th>Status</th>
+        <th>Assigned Nurse</th>
+        <th>File</th>
       </tr>
-    </thead><tbody>`;
+    </thead>
+    <tbody>`;
 
   if (list.length === 0) {
-    html += `<tr><td colspan="5">No cases found</td></tr>`;
+    html += `<tr><td colspan="8">No cases found</td></tr>`;
   } else {
     list.forEach((c) => {
       const patient = patients.find((p) => p.id === c.patientId);
       html += `<tr>
         <td>${patient ? patient.name : "Unknown"}</td>
+        <td>${c.medicalDiagnosis || "-"}</td>
+        <td>${c.doctorDiagnosis || "-"}</td>
+        <td>${c.history || "-"}</td>
         <td>${c.summary}</td>
         <td>${c.status}</td>
         <td>${c.nurse}</td>
@@ -143,6 +166,7 @@ function renderCaseList() {
   document.getElementById("caseList").innerHTML = html;
   renderCasePagination();
 }
+
 
 function renderCasePagination() {
   const totalPages = Math.ceil(filteredCases.length / casesPerPage);
@@ -185,6 +209,11 @@ caseForm.addEventListener("submit", (e) => {
   const patientName = document.getElementById("patientName").value.trim();
   const patientAge = document.getElementById("patientAge").value.trim();
   const patientSex = document.getElementById("patientSex").value.trim();
+
+  const medicalDiagnosis = document.getElementById("medicalDiagnosis").value.trim();
+  const doctorDiagnosis = document.getElementById("doctorDiagnosis").value.trim();
+  const history = document.getElementById("history").value.trim();
+
   const caseSummary = document.getElementById("caseSummary").value.trim();
   const caseStatus = document.getElementById("caseStatus").value.trim();
   const assignedNurse = document.getElementById("assignedNurse").value.trim();
@@ -195,78 +224,100 @@ caseForm.addEventListener("submit", (e) => {
     return;
   }
 
-  // Add or find patient id
-  const patientId = findOrAddPatient(patientName, patientAge, patientSex);
+  if (caseForm.dataset.editPatientId) {
+    // Edit existing patient
+    const patientId = parseInt(caseForm.dataset.editPatientId, 10);
+    const patient = patients.find(p => p.id === patientId);
+    if (!patient) {
+      alert("Patient not found for editing");
+      return;
+    }
+    patient.name = patientName;
+    patient.age = patientAge;
+    patient.sex = patientSex;
+    patient.medicalDiagnosis = medicalDiagnosis;
+    patient.doctorDiagnosis = doctorDiagnosis;
+    patient.history = history;
 
-  // Add case linked to patientId
-  addCase(patientId, caseSummary, caseStatus, assignedNurse, fileName);
+    // Optional: Update cases linked to patient if you want
 
-  // Reset form
+    delete caseForm.dataset.editPatientId;
+  } else {
+    // Add or find patient id
+    const patientId = findOrAddPatient(patientName, patientAge, patientSex, medicalDiagnosis, doctorDiagnosis, history);
+
+    // Add case linked to patientId
+    addCase(patientId, medicalDiagnosis, doctorDiagnosis, history, caseSummary, caseStatus, assignedNurse, fileName);
+  }
+
   caseForm.reset();
-
-  // Update filtered arrays and re-render
   filteredPatients = [...patients];
   filteredCases = [...cases];
-
   renderPatientList();
   renderCaseList();
-  render(); // Update cards in UI too
+  render();
 });
 
-// Initial load (empty arrays)
-filteredPatients = [...patients];
-filteredCases = [...cases];
-renderPatientList();
-renderCaseList();
-render();
 
 // --- PRINT ---
 document.getElementById("printBtn").addEventListener("click", () => {
   let printWindow = window.open("", "", "width=900,height=700");
   let html = `
-    <h2>Patient Profiles</h2>
-    <table border="1" cellspacing="0" cellpadding="5">
-      <thead>
-        <tr><th>Name</th><th>Age</th><th>Sex</th></tr>
-      </thead>
-      <tbody>
-        ${patients
-          .map(
-            (p) => `
-          <tr>
-            <td>${p.name}</td>
-            <td>${p.age}</td>
-            <td>${p.sex}</td>
-          </tr>
-        `
-          )
-          .join("")}
-      </tbody>
-    </table>
+  <h2>Patient Profiles</h2>
+  <table border="1" cellspacing="0" cellpadding="5">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Age</th>
+        <th>Sex</th>
+        <th>Medical Diagnosis</th>
+        <th>Doctor Diagnosis</th>
+        <th>History</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${patients.map(p => `
+        <tr>
+          <td>${p.name}</td>
+          <td>${p.age}</td>
+          <td>${p.sex}</td>
+          <td>${p.medicalDiagnosis || ""}</td>
+          <td>${p.doctorDiagnosis || ""}</td>
+          <td>${p.history || ""}</td>
+        </tr>
+      `).join('')}
+    </tbody>
+  </table>
 
-    <h2>Case Presentations</h2>
-    <table border="1" cellspacing="0" cellpadding="5">
-      <thead>
-        <tr><th>Patient Name</th><th>Summary</th><th>Status</th><th>Assigned Nurse</th><th>File</th></tr>
-      </thead>
-      <tbody>
-        ${cases
-          .map((c) => {
-            const patient = getPatientById(c.patientId);
-            return `
-            <tr>
-              <td>${patient ? patient.name : "Unknown"}</td>
-              <td>${c.summary || ""}</td>
-              <td>${c.status || ""}</td>
-              <td>${c.nurse || ""}</td>
-              <td>${c.attachedFileName || "No file attached"}</td>
-            </tr>
-          `;
-          })
-          .join("")}
-      </tbody>
-    </table>
-  `;
+  <h2>Case Presentations</h2>
+  <table border="1" cellspacing="0" cellpadding="5">
+    <thead>
+      <tr>
+        <th>Patient Name</th>
+        <th>Summary</th>
+        <th>Status</th>
+        <th>Assigned Nurse</th>
+        <th>File</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${cases.map(c => {
+        const patient = getPatientById(c.patientId);
+        return `
+          <tr>
+            <td>${patient ? patient.name : "Unknown"}</td>
+            <td>${c.summary || ""}</td>
+            <td>${c.status || ""}</td>
+            <td>${c.nurse || ""}</td>
+            <td>${c.attachedFileName || "No file attached"}</td>
+          </tr>
+        `;
+      }).join('')}
+    </tbody>
+  </table>
+`;
+
+
 
   printWindow.document.write(html);
   printWindow.document.close();
@@ -279,21 +330,25 @@ document.getElementById("printBtn").addEventListener("click", () => {
 document.getElementById("exportCSVBtn").addEventListener("click", () => {
   let csvContent = "data:text/csv;charset=utf-8,";
   csvContent +=
-    "Patient Name,Age,Sex,Case Summary,Status,Assigned Nurse,File\n";
+  "Patient Name,Age,Sex,Medical Diagnosis,Doctor Diagnosis,History,Case Summary,Status,Assigned Nurse,File\n";
 
-  cases.forEach((c) => {
-    const patient = getPatientById(c.patientId);
-    const row = [
-      patient ? patient.name : "Unknown",
-      patient ? patient.age : "",
-      patient ? patient.sex : "",
-      `"${(c.summary || "").replace(/"/g, '""')}"`,
-      c.status || "",
-      c.nurse || "",
-      c.attachedFileName || "",
-    ].join(",");
-    csvContent += row + "\n";
-  });
+cases.forEach((c) => {
+  const patient = getPatientById(c.patientId);
+  const row = [
+    patient ? patient.name : "Unknown",
+    patient ? patient.age : "",
+    patient ? patient.sex : "",
+    patient ? (patient.medicalDiagnosis || "") : "",
+    patient ? (patient.doctorDiagnosis || "") : "",
+    patient ? (patient.history || "") : "",
+    `"${(c.summary || "").replace(/"/g, '""')}"`,
+    c.status || "",
+    c.nurse || "",
+    c.attachedFileName || "",
+  ].join(",");
+  csvContent += row + "\n";
+});
+
 
   const encodedUri = encodeURI(csvContent);
   const link = document.createElement("a");
@@ -315,40 +370,48 @@ document.getElementById("exportPDFBtn").addEventListener("click", () => {
   // Unique patients from patients array (already available)
   const uniquePatients = patients;
 
-  doc.autoTable({
-    startY: 25,
-    head: [["Name", "Age", "Sex"]],
-    body: uniquePatients.map((p) => [p.name, p.age, p.sex]),
-  });
+  // Patient Profiles table with extra columns
+doc.autoTable({
+  startY: 25,
+  head: [["Name", "Age", "Sex", "Medical Diagnosis", "Doctor Diagnosis", "History"]],
+  body: patients.map(p => [
+    p.name,
+    p.age,
+    p.sex,
+    p.medicalDiagnosis || "",
+    p.doctorDiagnosis || "",
+    p.history || ""
+  ]),
+});
 
-  let finalY = doc.lastAutoTable.finalY + 10;
+// Cases table with existing columns
+let finalY = doc.lastAutoTable.finalY + 10;
+doc.setFontSize(16);
+doc.text("Case Presentations", 14, finalY);
 
-  doc.setFontSize(16);
-  doc.text("Case Presentations", 14, finalY);
+doc.autoTable({
+  startY: finalY + 5,
+  head: [["Patient Name", "Summary", "Status", "Assigned Nurse", "File"]],
+  body: cases.map(c => {
+    const patient = getPatientById(c.patientId);
+    return [
+      patient ? patient.name : "Unknown",
+      c.summary || "",
+      c.status || "",
+      c.nurse || "",
+      c.attachedFileName || "No file attached"
+    ];
+  }),
+  styles: { fontSize: 10 },
+  headStyles: { fillColor: [22, 160, 133] },
+});
 
-  doc.autoTable({
-    startY: finalY + 5,
-    head: [["Patient Name", "Summary", "Status", "Assigned Nurse", "File"]],
-    body: cases.map((c) => {
-      const patient = getPatientById(c.patientId);
-      return [
-        patient ? patient.name : "Unknown",
-        c.summary || "",
-        c.status || "",
-        c.nurse || "",
-        c.attachedFileName || "No file attached",
-      ];
-    }),
-    styles: { fontSize: 10 },
-    headStyles: { fillColor: [22, 160, 133] },
-  });
 
   doc.save("profiles_and_cases.pdf");
 });
 
 // --- Render cards ---
 function render() {
-  // Render patient cards
   let patientHtml = "";
   patients.forEach((p) => {
     patientHtml += `
@@ -356,6 +419,9 @@ function render() {
         <h3>${p.name}</h3>
         <p><strong>Age:</strong> ${p.age}</p>
         <p><strong>Sex:</strong> ${p.sex}</p>
+        <p><strong>Medical Diagnosis:</strong> ${p.medicalDiagnosis || ""}</p>
+        <p><strong>Doctor Diagnosis:</strong> ${p.doctorDiagnosis || ""}</p>
+        <p><strong>History:</strong> ${p.history || ""}</p>
       </div>
     `;
   });
